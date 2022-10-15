@@ -107,7 +107,7 @@ Considere $\mathbf{p}=[p_{1},...,p_{14}]^{\top}$, $\mathbf{x}=[n_1,...,n_{14},m_
 &\pi(p_i)=\mathds{I}(p_i \in [0,1]) , i=1,2,...,14.
 \end{align}
 
-A seguir vamos derivar a distribuição condicional de $N|\mathbf{p,x}$. Note que $\mathds{I}(N \in \mathbb{N})\mathds{I}(p_i \in [0,1])\mathds{I}(r \in \mathbb{B})=\mathds{I}(N \in {r,r+1,...})\mathds{I}(p_i \in [0,1])$, pois $\mathds{I}(r \in \mathbb{B})=\mathds{I}(N \in \{r,r+1,...\})$.
+A seguir vamos derivar a distribuição condicional completa de $N|\mathbf{p,x}$. Note que $\mathds{I}(N \in \mathbb{N})\mathds{I}(p_i \in [0,1])\mathds{I}(r \in \mathbb{B})=\mathds{I}(N \in {r,r+1,...})\mathds{I}(p_i \in [0,1])$, pois $\mathds{I}(r \in \mathbb{B})=\mathds{I}(N \in \{r,r+1,...\})$.
 
 \begin{align*}
 \pi(N|\mathbf{p,x})&\propto \mathcal{L}(N,\mathbf{p}|\mathbf{x}) \pi(N)\\
@@ -128,6 +128,23 @@ Portanto
 Temos que $(N-r)|(\mathbf{p,x})\sim Poisson(\lambda\prod_{i=1}^{14}(1-p_i))$, identificado pelo \textit{kernel} apresentado em \ref{piN}.
 \newpage
 \restoregeometry
+Agora vamos derivar a distribuição condicional completa de $p_i|N,\mathbf{x}, i=1,2,...,14$. Considere $\mathbf{p_{(i)}}=(p_1,p_2,...,p_{i-1},p_{i+1},...,p_{14}$, isto é, o vetor de parâmetros $\mathbf{p}$ sem o i-ésimo elemento.
+\begin{align*}
+\pi(p_i|N,\mathbf{p_{(i)},x})&\propto \mathcal{L}(N,\mathbf{p}|\mathbf{x}) \pi(\mathbf{p_{(i)}})\\
+& = \frac{N!}{(N-r)!}\prod_{l=1}^{14}p_{i}^{n_l}(1-p_l)^{N-n_l}\mathds{I}(N \in \{r,r+1,...\})\mathds{I}(p_l \in [0,1])\left[\prod_{j\neq i}\mathds{I}(p_j \in [0,1])\right]\\
+& = \frac{N!}{(N-r)!}\prod_{l=1}^{14}p_{l}^{n_l}(1-p_l)^{N-n_l}\mathds{I}(N \in \{r,r+1,...\})\mathds{I}(p_l \in [0,1])\\
+& \propto p_i^{n_i}(1-p_i)^{N-n_i}\mathds{I}(p_i \in [0,1])\\
+& = p_i^{(n_i-1)+1}(1-p_i)^{(N-n_i-1)+1}\mathds{I}(p_i \in [0,1])
+\end{align*}
+Podemos então identificar que $p_i|N,\mathbf{x} \sim \text{Beta}(n_i+1,N-n_i+1), i=1,2,...,14$ pelo kernel que apresentado acima. Chegamos a conclusão que 
+
+\begin{align}
+& (N-r)|(\mathbf{p,x})\sim Poisson(\lambda\prod_{i=1}^{14}(1-p_i))\\
+& p_i|N,\mathbf{x} \sim Beta(n_i+1,N-n_i+1), i=1,2,...,14
+\end{align}
+
+\subsection{Implementação Gibbs}
+
 
 \newpage
 \section{Implementação \textit{Hamiltonian} Monte Carlo}
