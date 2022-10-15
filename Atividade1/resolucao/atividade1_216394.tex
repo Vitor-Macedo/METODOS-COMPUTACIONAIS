@@ -1,0 +1,161 @@
+\documentclass[a4paper,12pt,twoside]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{subfig}
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{amsmath,amssymb,amsfonts,bm}
+\usepackage[bottom=2cm,top=2cm,left=2.0cm,right=2.0cm]{geometry}
+\usepackage{float}
+\usepackage[portuges]{babel}
+\usepackage{indentfirst}
+\usepackage[colorlinks=true, allcolors=black]{hyperref}
+\usepackage[alf]{abntex2cite}
+\usepackage[export]{adjustbox}
+\usepackage{afterpage}
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{textcomp}
+\usepackage{ dsfont }
+\usepackage{listings}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[RO,LE]{\nouppercase{\emph\leftmark}}
+\fancyhead[LO,RE]{\emph \thepage}
+\renewcommand{\sectionmark}[1]{\markboth{#1}{}}
+
+\newtheorem{teo}{Teorema}[section]
+\newtheorem{lema}[teo]{Lema}
+\newtheorem{cor}[teo]{Corolário}
+\newtheorem{prop}[teo]{Proposição}
+\newtheorem{defi}{Definição}
+\newtheorem{exem}{Exemplo}
+
+\usepackage{color}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{codeyellow}{rgb}{0.67,0.67,0.0}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstset{
+language=R,   % R code
+literate=
+{á}{{\'a}}1
+{à}{{\`a}}1
+{ã}{{\~a}}1
+{é}{{\'e}}1
+{ê}{{\^e}}1
+{í}{{\'i}}1
+{ó}{{\'o}}1
+{õ}{{\~o}}1
+{ú}{{\'u}}1
+{ü}{{\"u}}1
+{ç}{{\c{c}}}1
+}
+\lstdefinestyle{mystyle}{
+    language=R,
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue},
+    emphstyle=\color{codeyellow},
+    numberstyle=\scriptsize\color{black},
+    stringstyle=\color{codegreen},
+    basicstyle=\rmfamily\scriptsize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=6pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\begin{document}
+\newgeometry{bottom=2.0cm,top=1cm,left=2.0cm,right=2.0cm}
+\thispagestyle{empty}
+	\begin{figure}[htb!]
+		\begin{flushright}
+			\includegraphics[scale=.3]{UNICAMP_logo.jpg} 
+		\end{flushright}
+	\end{figure}
+	\vspace{-3.5cm}
+	\hspace{1.5cm}
+	\begin{flushleft}
+	\begin{minipage}{15cm}
+	\textbf{IMECC-UNICAMP\\
+	Atividade 1 - Métodos computacionais}\\
+	Professor: Dr. Guilherme Ludwig\\
+	Vitor Macedo Rocha RA: 216394
+	\end{minipage}
+	\end{flushleft}
+\noindent\rule{17cm}{0.4pt}
+
+\section{Distribuições condicionais completas e implementação Gibbs}
+
+Considere $\mathbf{p}=[p_{1},...,p_{14}]^{\top}$, $\mathbf{x}=[n_1,...,n_{14},m_1,...,m_{14}]^{\top}$ e $\mathbb{B}=\{0,1,2,...,N\}$, temos que a verosimilhança e as distribuições a priori são dadas por
+\begin{align}
+&\mathcal{L}(N,\mathbf{p}|\mathbf{x})\propto \frac{N!}{(N-r)!}\prod_{i=1}^{14}p_{i}^{n_i}(1-p_i)^{N-n_i}\mathds{I}(N \in \mathbb{N})\mathds{I}(p_i \in [0,1])\mathds{I}(r \in \mathbb{B})\\
+&\pi(N)=\frac{e^{-\lambda}\lambda^{N}}{N!} \mathds{I}(N \in \mathbb{N})\\
+&\pi(p_i)=\mathds{I}(p_i \in [0,1]) , i=1,2,...,14.
+\end{align}
+
+A seguir vamos derivar a distribuição condicional de $N|\mathbf{p,x}$. Note que $\mathds{I}(N \in \mathbb{N})\mathds{I}(p_i \in [0,1])\mathds{I}(r \in \mathbb{B})=\mathds{I}(N \in {r,r+1,...})\mathds{I}(p_i \in [0,1])$, pois $\mathds{I}(r \in \mathbb{B})=\mathds{I}(N \in \{r,r+1,...\})$.
+
+\begin{align*}
+\pi(N|\mathbf{p,x})&\propto \mathcal{L}(N,\mathbf{p}|\mathbf{x}) \pi(N)\\
+&= \frac{N!}{(N-r)!}\prod_{i=1}^{14}p_{i}^{n_i}(1-p_i)^{N-n_i}\mathds{I}(N \in \{r,r+1,...\})\mathds{I}(p_i \in [0,1])\frac{e^{-\lambda}\lambda^{N}}{N!} \mathds{I}(N \in \mathbb{N})\\
+&=\frac{e^{-\lambda}\lambda^{N}}{(N-r)!}\prod_{i=1}^{14}p_{i}^{n_i}(1-p_i)^{N}(1-p_i)^{-n_i}\mathds{I}(N \in \{r,r+1,...\})\mathds{I}(p_i \in [0,1])\\
+&=\frac{e^{-\lambda}\lambda^{N}}{(N-r)!}\prod_{i=1}^{14}\left[p_{i}^{n_i}\right]\prod_{i=1}^{14}\left[(1-p_i)^{N}\right]\prod_{i=1}^{14}\left[(1-p_i)^{-n_i}\right]\mathds{I}(N \in \{r,r+1,...\})\mathds{I}(p_i \in [0,1])\\
+& \propto \frac{e^{-\lambda}\lambda^{N}}{(N-r)!}\left[\prod_{i=1}^{14}(1-p_i)\right]^{N}\mathds{I}(N \in \{r,r+1,...\})\mathds{I}(p_i \in [0,1])\\
+& = \frac{e^{-\lambda}\left[\lambda\prod_{i=1}^{14}(1-p_i)\right]^{N}}{(N-r)!}\mathds{I}(N \in \{r,r+1,...\})\mathds{I}(p_i \in [0,1])\frac{e^{-\lambda\prod_{i=1}^{14}(1-p_i)}}{e^{-\lambda\prod_{i=1}^{14}(1-p_i)}}\\
+& \propto \frac{\exp\{-\lambda\prod_{i=1}^{14}(1-p_i)\}\left[\lambda\prod_{i=1}^{14}(1-p_i)\right]^{N}}{(N-r)!}\mathds{I}(N \in \{r,r+1,...\})\mathds{I}(p_i \in [0,1])\\
+& \propto \frac{\exp\{-\lambda\prod_{i=1}^{14}(1-p_i)\}\left[\lambda\prod_{i=1}^{14}(1-p_i)\right]^{N-r}}{(N-r)!}\mathds{I}(N \in \{r,r+1,...\})\mathds{I}(p_i \in [0,1])\\
+& = \frac{\exp\{-\lambda\prod_{i=1}^{14}(1-p_i)\}\left[\lambda\prod_{i=1}^{14}(1-p_i)\right]^{N-r}}{(N-r)!}\mathds{I}(N-r \in \mathbb{N})\mathds{I}(p_i \in [0,1])\\
+\end{align*}
+Portanto
+\begin{equation}\label{piN}
+\pi(N|\mathbf{p,x})\propto \frac{\exp\{-\lambda\prod_{i=1}^{14}(1-p_i)\}\left[\lambda\prod_{i=1}^{14}(1-p_i)\right]^{N-r}}{(N-r)!}\mathds{I}(N-r \in \mathbb{N})\mathds{I}(p_i \in [0,1])
+\end{equation}
+
+Temos que $(N-r)|(\mathbf{p,x})\sim Poisson(\lambda\prod_{i=1}^{14}(1-p_i))$, identificado pelo \textit{kernel} apresentado em \ref{piN}.
+\newpage
+\restoregeometry
+
+\newpage
+\section{Implementação \textit{Hamiltonian} Monte Carlo}
+
+\newpage
+\section{Implementação \textit{Hamiltonian} Monte Carlo no STAN}
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
