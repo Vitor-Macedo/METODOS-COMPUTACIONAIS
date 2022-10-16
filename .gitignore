@@ -7,3 +7,4 @@ lista1
 *.log
 *.out
 *.gz
+.Rhistory
