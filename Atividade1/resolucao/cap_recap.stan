@@ -7,5 +7,6 @@ parameters{
   real<lower=(C - R + M)> N;
 }
 model{
+  N ~ exponential(.02);
   R ~ binomial(C, M / N);
 }

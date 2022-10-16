@@ -146,10 +146,16 @@ Podemos então identificar que $p_i|N,\mathbf{x} \sim \text{Beta}(n_i+1,N-n_i+1)
 Para avaliar se as distribuições a posteriori, vamos gerar as 4 diferentes cadeias de Markov.
 
 \newpage
-\section{Implementação \textit{Hamiltonian} Monte Carlo}
+\section{Implementação \textit{Hamiltonian Monte Carlo}}
+Como bem sabemos, o HMC \textit{sampler} não comporta suportes discretos pela fato de que a função que descreve a energia cinética há de ser derivável em relação a "trajetória" da cadeia. Por esse fato, optei por procurar uma solução na própria documentação do stan e acabei essbarrando com alguns modelos de captura-marcação-recaptura como: \textit{one stage Marked-recapture} e \textit{Cormack-Jolly-Seber}.
+
+Minha ideia inicial foi utilizar a relação entre a distribuição exponencial e poisson que vi a partir do proceso de poisson.
+
+
 
 \newpage
-\section{Implementação \textit{Hamiltonian} Monte Carlo no STAN}
+\section{Implementação \textit{Hamiltonian Monte Carlo} no STAN}
+Vi a possibilidade da marginalização de parâmetros discretos, a seguir são apresentados os cálculos da marginalização de N e a implementação da minha ideia no STAN.
 \newpage
 \section*{Apêndice A}
 \subsection*{A.1 Implementação Gibbs Sampler}
