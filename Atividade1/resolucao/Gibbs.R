@@ -1,6 +1,7 @@
 library(readr)
 library(tidyverse)
-dados <- read_table("./Atividade1/resolucao/dados.txt", 
+setwd("D:/UNICAMP/Disciplinas/COMPUTACIONAL/Atividade1/resolucao")
+dados <- read_table("./dados.txt", 
                     col_names = FALSE)
 colnames(dados) <- c('onca',paste0('armadilha',1:14))
 nj <- dados%>%
@@ -34,5 +35,5 @@ for (i in 2:Ngibbs) {
     chain[j+1,i] <- aux
   }
 }
-summary(coda::mcmc(t(chain)))
+rowMeans(chain)
 

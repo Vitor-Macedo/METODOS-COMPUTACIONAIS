@@ -98,7 +98,7 @@ literate=
 	\end{flushleft}
 \noindent\rule{17cm}{0.4pt}
 
-\section{Distribuições condicionais completas e implementação Gibbs}
+\section{Distribuições condicionais completas e implementação Gibbs}\label{gibbs}
 
 Considere $\mathbf{p}=[p_{1},...,p_{14}]^{\top}$, $\mathbf{x}=[n_1,...,n_{14},m_1,...,m_{14}]^{\top}$ e $\mathbb{B}=\{0,1,2,...,N\}$, temos que a verosimilhança e as distribuições a priori são dadas por
 \begin{align}
@@ -147,14 +147,80 @@ Para avaliar se as distribuições a posteriori, vamos gerar as 4 diferentes cad
 
 \newpage
 \section{Implementação \textit{Hamiltonian Monte Carlo}}
-Como bem sabemos, o HMC \textit{sampler} não comporta suportes discretos pela fato de que a função que descreve a energia cinética há de ser derivável em relação a "trajetória" da cadeia. Por esse fato, optei por procurar uma solução na própria documentação do stan e acabei essbarrando com alguns modelos de captura-marcação-recaptura como: \textit{one stage Marked-recapture} e \textit{Cormack-Jolly-Seber}.
+Como bem sabemos, o HMC \textit{sampler} não comporta suportes discretos pela fato de que a função que descreve a energia cinética há de ser derivável em relação a "trajetória" da cadeia. Por esse fato, optei por procurar uma solução na própria documentação do stan e acabei essbarrando com alguns modelos de captura-marcação-recaptura como:\textit{one stage Marked-recapture} e \textit{Cormack-Jolly-Seber} que serão úteis na hora da implementação no STAN.
 
-Minha ideia inicial foi utilizar a relação entre a distribuição exponencial e poisson que vi a partir do proceso de poisson.
+Para realizar a implementação no R, procurei artigos na web que tratassem desse assunto e encontrei uma extensão do HMC chamado de \textit{Discontinuous Hamiltonian} Monte Carlo \cite{dhmc}. Nele é discutido também o porquê o HMC falha quando temos interesse em densidades alvo descontínuas, resumidamente a etapa da solução das equações diferenciais via \textit{leapfrog} apresenta uma instabilidade levando ao erro. Outra ideia que tive no meio do processo de implementação do DHMC foi a aproximação da poisson pela distribuição normal. Logo nessa sessão irei implementar o HMC usando a distribuição a priori $\pi(N)\sim Normal(\mu = 50, \sigma^2=50)$ e logo após irei tentar a implementação do DHMC. 
+
+\subsection{HMC via aproximação Poisson-Normal}
+
+No gráfico a seguir podemos ver que a aproximação é realmente razoável.
+\begin{figure}[H]
+  \centering
+  \subfloat[\footnotesize{}]{\includegraphics[width=8cm,height=5cm]{imgs/g1.pdf}}
+  \subfloat[\footnotesize{}]{\includegraphics[width=8cm,height=5cm]{imgs/g2.pdf}}
+
+  \captionsetup{font=footnotesize,width=15cm}
+  \caption{\small Aproximação da distribuição $Poisson(\lambda=50)$ pela distribuição $Normal(\mu=50,\sigma^2=50)$.}
+\end{figure}
+
+A partir da verosimilhança apresentada em \ref{gibbs} e as distribuições a priori $\pi(N)\sim Normal(50,50)$ e $\pi(p_i)\sim U(0,1),i=1,2,...,14$. Obtemos a seguinte função proporcional a distribuição a posteriori.
+
+\begin{align*}
+\pi(N,\mathbf{p|x})\propto \left[\frac{N!}{(N-r)!}\prod_{i=1}^{14}p_{i}^{n_i}(1-p_i)^{N-n_i}\mathds{I}(p_i \in [0,1])\mathds{I}(r \in [0,N])\right] \times \pi(N) \times \pi(\mathbf{p}) 
+\end{align*}
+
+Precisamos então das quantidade referentes a "força cinética" $K(\bm{\rho})$ e "força potencial" $U(\mathbf{y})$. Definimos 
+
+\begin{align*}
+U(\mathbf{y}) &= -\log(\pi(N,\mathbf{p|x}))\\
+&=
+\end{align*}
+
+\begin{align*}
+&K(\bm{\rho}) = -\log(\pi(\bm{\rho}|N,\mathbf{p}))
+\end{align*}
+\subsection{DHMC}
 
 
 
 \newpage
 \section{Implementação \textit{Hamiltonian Monte Carlo} no STAN}
+\subsection{Aproximação Poisson-Normal}
+\begin{lstlisting}[language=R]
+data{
+  int j;
+  vector[j] ni;
+  vector[j]mi;
+}
+transformed data{
+  real r;  
+  r = sum(ni) - sum(mi);
+}
+parameters{
+  vector<lower=0,upper=1>[j] p;
+  real Nt;
+}
+
+transformed parameters{
+  real N;
+  N= Nt-r;
+}
+
+model{
+  target+= normal_lpdf(N|50,sqrt(50));
+  p ~ uniform(0,1);
+  target += log(tgamma(N+1)) - log(tgamma(N - r + 1)) + sum(ni .* log(p)  + (N-ni).*log(1-p));
+}
+mod <- rstan::stan_model('cap_recap.stan')
+nj <- c(2,4,2,4,4,2,3,4,2,3,5,10,2,5)
+mj <- c(0,0,2,4,4,2,3,2,2,3,5,6,2,5)
+MCMC <- rstan::sampling(object=mod,data=list(j=14,ni=nj,mi=mj),chains=4,iter=2000,control=list(max_treedepth=15))
+chains <- rstan::extract(MCMC)
+
+\end{lstlisting}
+
+
+\subsection{Marginalização}
 Vi a possibilidade da marginalização de parâmetros discretos, a seguir são apresentados os cálculos da marginalização de N e a implementação da minha ideia no STAN.
 \newpage
 \section*{Apêndice A}
@@ -197,6 +263,7 @@ for (i in 2:Ngibbs) {
   }
 }
 \end{lstlisting}
+\bibliography{ref}
 \end{document}
 
 
