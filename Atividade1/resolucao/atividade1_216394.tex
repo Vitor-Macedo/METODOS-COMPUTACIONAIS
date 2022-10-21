@@ -143,13 +143,77 @@ Podemos então identificar que $p_i|N,\mathbf{x} \sim \text{Beta}(n_i+1,N-n_i+1)
 & p_i|N,\mathbf{x} \sim Beta(n_i+1,N-n_i+1), i=1,2,...,14
 \end{align}
 
-Para avaliar se as distribuições a posteriori, vamos gerar as 4 diferentes cadeias de Markov.
+Para avaliar a convergência para a distribuição estacionária, vamos gerar as 4 cadeias com diferentes pontos iniciais e avaliar visualmente se elas se misturam.
+
+\begin{figure}[H]
+  \centering
+  \subfloat[\footnotesize{$p_1$}]{\includegraphics[width=8cm,height=5cm]{imgs/p1.pdf}}
+  \subfloat[\footnotesize{$p_2$}]{\includegraphics[width=8cm,height=5cm]{imgs/p2.pdf}} \\
+  \subfloat[\footnotesize{$p_3$}]{\includegraphics[width=8cm,height=5cm]{imgs/p3.pdf}}
+  \subfloat[\footnotesize{$p_4$}]{\includegraphics[width=8cm,height=5cm]{imgs/p4.pdf}}\\
+  %
+  \captionsetup{font=footnotesize,width=15cm}
+  \caption{\small }
+\end{figure}
+
+\newpage
+\begin{figure}[H]
+  \centering
+  \subfloat[\footnotesize{$p_5$}]{\includegraphics[width=8cm,height=5cm]{imgs/p5.pdf}}
+  \subfloat[\footnotesize{$p_6$}]{\includegraphics[width=8cm,height=5cm]{imgs/p6.pdf}} \\
+  \subfloat[\footnotesize{$p_7$}]{\includegraphics[width=8cm,height=5cm]{imgs/p7.pdf}}
+  \subfloat[\footnotesize{$p_8$}]{\includegraphics[width=8cm,height=5cm]{imgs/p8.pdf}} \\\subfloat[\footnotesize{$p_9$}]{\includegraphics[width=8cm,height=5cm]{imgs/p9.pdf}}
+  \subfloat[\footnotesize{$p_{10}$}]{\includegraphics[width=8cm,height=5cm]{imgs/p10.pdf}} \\\subfloat[\footnotesize{$p_{11}$}]{\includegraphics[width=8cm,height=5cm]{imgs/p11.pdf}}
+  \subfloat[\footnotesize{$p_{12}$}]{\includegraphics[width=8cm,height=5cm]{imgs/p12.pdf}} \\\label{a}
+  %
+  \captionsetup{font=footnotesize,width=15cm}
+  \caption{\small }
+\end{figure}
+
+\newpage
+\begin{figure}[H]
+  \centering
+  \subfloat[\footnotesize{N}]{\includegraphics[width=8cm,height=5cm]{imgs/N.pdf}}
+    \subfloat[\footnotesize{Auto correlação do parâmetro N.}]{\includegraphics[width=8cm,height=5cm]{imgs/Nacf.pdf}}
+  %
+  \captionsetup{font=footnotesize,width=15cm}
+  \caption{\small }
+\end{figure}
+
+Podemos ver que as cadeias para todos os parâmetros se misturaram, trazendo indícios da convergência para a distribuição estacionária. Além disso vemos pelo gráfico da autocorrelação da cadeia do parâmetro N que não precisamos realizar o processo de \textit{decorrelation} para garantir uma amostra pseudo-independente. Os gráficos de autocorrelação dos parâmetros $p_i,i=1,2,...,14.$ apresentaram um comportamento similar.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{cccc}
+  \hline
+  Parâmetro & Média & Mediana & intervalo de credibilidade 95\% \\ 
+  \hline
+ N & 12.140 & 12.000 & [12;13] \\ 
+p1 & 0.211 & 0.196 & [0.051;0.452] \\ 
+p2 & 0.352 & 0.346 & [0.136;0.608] \\ 
+p3 & 0.212 & 0.197 & [0.052;0.446] \\ 
+ p4 & 0.355 & 0.348 & [0.139;0.604] \\ 
+ p5 & 0.356 & 0.349 & [0.139;0.613] \\ 
+ p6 & 0.213 & 0.199 & [0.05;0.456] \\ 
+ p7 & 0.284 & 0.277 & [0.088;0.531] \\ 
+ p8 & 0.356 & 0.347 & [0.137;0.614] \\ 
+ p9 & 0.214 & 0.200 & [0.051;0.452] \\ 
+p10 & 0.285 & 0.276 & [0.091;0.531] \\ 
+ p11 & 0.426 & 0.419 & [0.187;0.684] \\ 
+ p12 & 0.778 & 0.791 & [0.538;0.946] \\ 
+p13 & 0.213 & 0.199 & [0.051;0.458] \\ 
+ p14 & 0.427 & 0.425 & [0.188;0.678] \\ 
+   \hline
+\end{tabular}
+\end{table}
 
 \newpage
 \section{Implementação \textit{Hamiltonian Monte Carlo}}
-Como bem sabemos, o HMC \textit{sampler} não comporta suportes discretos pela fato de que a função que descreve a energia cinética há de ser derivável em relação a "trajetória" da cadeia. Por esse fato, optei por procurar uma solução na própria documentação do stan e acabei essbarrando com alguns modelos de captura-marcação-recaptura como:\textit{one stage Marked-recapture} e \textit{Cormack-Jolly-Seber} que serão úteis na hora da implementação no STAN.
+Como bem sabemos, o HMC \textit{sampler} não comporta suportes discretos pela fato de que a função que descreve a energia cinética há de ser derivável em relação a "trajetória" da cadeia. Por esse fato, optei por procurar uma solução na própria documentação do stan e acabei encontrando a opção de marginalização do parâmetro discreto.
 
-Para realizar a implementação no R, procurei artigos na web que tratassem desse assunto e encontrei uma extensão do HMC chamado de \textit{Discontinuous Hamiltonian} Monte Carlo \cite{dhmc}. Nele é discutido também o porquê o HMC falha quando temos interesse em densidades alvo descontínuas, resumidamente a etapa da solução das equações diferenciais via \textit{leapfrog} apresenta uma instabilidade levando ao erro. Outra ideia que tive no meio do processo de implementação do DHMC foi a aproximação da poisson pela distribuição normal. Logo nessa sessão irei implementar o HMC usando a distribuição a priori $\pi(N)\sim Normal(\mu = 50, \sigma^2=50)$ e logo após irei tentar a implementação do DHMC. 
+Para realizar a implementação no R, procurei artigos na web que tratassem desse assunto e encontrei uma extensão do HMC chamado de \textit{Discontinuous Hamiltonian} Monte Carlo \cite{dhmc}. Nele é discutido também o porquê o HMC falha quando temos interesse em densidades alvo descontínuas, resumidamente a etapa da solução das equações diferenciais via \textit{leapfrog} apresenta uma instabilidade levando ao erro.
+
+Outra ideia que tive foi utilizar a aproximação da distribuição poisson pela Normal, da seguinte maneira $Poisson(\lambda)\approx Normal(\mu=\lambda,\sigma^2=\lambda)$. Como essa última foi a solução mais simples que achei, vou implementar primeiro e se tiver tempo hábil tentarei implementar as outras.
 
 \subsection{HMC via aproximação Poisson-Normal}
 
@@ -172,57 +236,28 @@ A partir da verosimilhança apresentada em \ref{gibbs} e as distribuições a pr
 Precisamos então das quantidade referentes a "força cinética" $K(\bm{\rho})$ e "força potencial" $U(\mathbf{y})$. Definimos 
 
 \begin{align*}
-U(\mathbf{y}) &= -\log(\pi(N,\mathbf{p|x}))\\
-&=
+&U(\mathbf{y})=-\log(\pi(N,\mathbf{p|x}))\\
+&-\left[\log(\Gamma(N+1)) - \log(\Gamma(N-r+1)) + \sum_{i=1}^{14}n_i\log(p_i)+(N-n_i)\log(1-p_i)\right]
 \end{align*}
+
 
 \begin{align*}
 &K(\bm{\rho}) = -\log(\pi(\bm{\rho}|N,\mathbf{p}))
 \end{align*}
-\subsection{DHMC}
 
 
 
 \newpage
 \section{Implementação \textit{Hamiltonian Monte Carlo} no STAN}
-\subsection{Aproximação Poisson-Normal}
-\begin{lstlisting}[language=R]
-data{
-  int j;
-  vector[j] ni;
-  vector[j]mi;
-}
-transformed data{
-  real r;  
-  r = sum(ni) - sum(mi);
-}
-parameters{
-  vector<lower=0,upper=1>[j] p;
-  real Nt;
-}
 
-transformed parameters{
-  real N;
-  N= Nt-r;
-}
-
-model{
-  target+= normal_lpdf(N|50,sqrt(50));
-  p ~ uniform(0,1);
-  target += log(tgamma(N+1)) - log(tgamma(N - r + 1)) + sum(ni .* log(p)  + (N-ni).*log(1-p));
-}
-mod <- rstan::stan_model('cap_recap.stan')
-nj <- c(2,4,2,4,4,2,3,4,2,3,5,10,2,5)
-mj <- c(0,0,2,4,4,2,3,2,2,3,5,6,2,5)
-MCMC <- rstan::sampling(object=mod,data=list(j=14,ni=nj,mi=mj),chains=4,iter=2000,control=list(max_treedepth=15))
-chains <- rstan::extract(MCMC)
-
-\end{lstlisting}
+Consegui fazer a implementação do modelo de captura-marcação-recaptura no STAN com as prioris de interesse usando a aproximação da poisson-Normal sugerida anteriormente. A seguir são apresentados os resultados, notamos que foram coerente com os métodos implementados no R.
 
 
-\subsection{Marginalização}
-Vi a possibilidade da marginalização de parâmetros discretos, a seguir são apresentados os cálculos da marginalização de N e a implementação da minha ideia no STAN.
+
+
+
 \newpage
+\bibliography{ref}
 \section*{Apêndice A}
 \subsection*{A.1 Implementação Gibbs Sampler}
 \begin{lstlisting}[language=R]
@@ -263,7 +298,38 @@ for (i in 2:Ngibbs) {
   }
 }
 \end{lstlisting}
-\bibliography{ref}
+
+\newpage
+\subsection*{A.1 Implementação STAN}
+\begin{lstlisting}[language=c]
+data{
+  int j;
+  vector[j] ni;
+  vector[j]mi;
+}
+transformed data{
+  real r;  
+  r = sum(ni) - sum(mi);
+}
+parameters{
+  vector<lower=0.00001,upper=.9999>[j] p;
+  real<lower=r> N;
+}
+
+transformed parameters{
+  real Nt;
+  Nt= N-r;
+}
+
+model{
+  target+= normal_lpdf(Nt|50,sqrt(50));
+  target+=uniform_lpdf(p|0,1);
+  target += log(tgamma(N+1)) - log(tgamma(N - r + 1)) + sum(ni .* log(p)  + (N-ni).*log(1-p));
+}
+
+\end{lstlisting}
+
+
 \end{document}
 
 
