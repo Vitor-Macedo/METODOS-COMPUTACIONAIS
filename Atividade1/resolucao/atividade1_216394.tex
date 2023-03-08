@@ -233,25 +233,96 @@ A partir da verosimilhança apresentada em \ref{gibbs} e as distribuições a pr
 \pi(N,\mathbf{p|x})\propto \left[\frac{N!}{(N-r)!}\prod_{i=1}^{14}p_{i}^{n_i}(1-p_i)^{N-n_i}\mathds{I}(p_i \in [0,1])\mathds{I}(r \in [0,N])\right] \times \pi(N) \times \pi(\mathbf{p}) 
 \end{align*}
 
-Precisamos então das quantidade referentes a "força cinética" $K(\bm{\rho})$ e "força potencial" $U(\mathbf{y})$. Definimos 
-
+Precisamos então das quantidade referentes a "força cinética" $K(\bm{\rho})$ e "força potencial" $U(\mathbf{\bm{\theta}})$. Definimos, para $p_i \in [0,1], i=1,2,...,14$, sendo $\bm{\theta}=[N,p_1,...,p_14]$.
+\newpage
 \begin{align*}
-&U(\mathbf{y})=-\log(\pi(N,\mathbf{p|x}))\\
-&-\left[\log(\Gamma(N+1)) - \log(\Gamma(N-r+1)) + \sum_{i=1}^{14}n_i\log(p_i)+(N-n_i)\log(1-p_i)\right]
+&U(\mathbf{\bm{\theta}})=-\log(\pi(N,\mathbf{p|x}))\\
+&-\left[\log(\Gamma(N+1)) - \log(\Gamma(N-r+1)) + \sum_{i=1}^{14}n_i\log(p_i)+(N-n_i)\log(1-p_i)\right] + \\
+&- \left[\frac{-1}{2}\left(\frac{N-50}{\sqrt{50}}\right)^2\right]\\
+&K(\bm{\rho}) = -\log(\pi(\bm{\rho}|N,\mathbf{p})) = \frac{-1}{2}\bm{\rho}^{\top}M^{-1}\bm{\rho}
 \end{align*}
 
-
+Agora precisamos encontrar o vetor gradiente do função $U(\bm{\theta})$
 \begin{align*}
-&K(\bm{\rho}) = -\log(\pi(\bm{\rho}|N,\mathbf{p}))
+\nabla_{\bm{\theta}}U(\bm{\theta}) = \left(\frac{\partial }{\partial N}U(\bm{\theta});\frac{\partial }{\partial p_1}U(\bm{\theta});\frac{\partial }{\partial p_2}U(\bm{\theta});...;\frac{\partial }{\partial p_{14}}U(\bm{\theta})\right)
 \end{align*}
 
+Em que 
+
+\begin{align*}
+&\frac{\partial }{\partial p_i}U(\bm{\theta})=\frac{Np_i-n_i}{p_i(1-p_i)}\\
+& \frac{\partial }{\partial N}U(\bm{\theta})=-\left[\frac{\psi(N+1)}{\Gamma(N+1)} -  \frac{\psi(N-r+1)}{\Gamma(N-r+1)} + \sum_{i=1}^{14}\log(1-p_i)-\frac{1}{50}(N-50) \right]
+\end{align*}
+
+A seguir são apresentados os resultados obtidos.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{cccc}
+  \hline
+Parâmetros & Média & Mediana & Intervalo de credibilidade 95\% \\ 
+  \hline
+N & 13.820 & 13.794 & [12.84;15.242] \\ 
+$p_1$ & 0.216 & 0.200 & [0.048;0.484] \\ 
+$p_2$ & 0.323 & 0.318 & [0.118;0.581] \\ 
+$p_3$ & 0.200 & 0.187 & [0.045;0.411] \\ 
+$p_4$ & 0.327 & 0.307 & [0.124;0.589] \\ 
+$p_5$ & 0.307 & 0.297 & [0.119;0.569] \\ 
+$p_6$ & 0.188 & 0.173 & [0.044;0.414] \\ 
+$p_7$ & 0.243 & 0.233 & [0.072;0.468] \\ 
+$p_8$ & 0.315 & 0.301 & [0.109;0.576] \\ 
+$p_9$ & 0.189 & 0.171 & [0.041;0.424] \\ 
+$p_{10}$ & 0.275 & 0.262 & [0.083;0.507] \\ 
+$p_{11}$ & 0.362 & 0.353 & [0.149;0.612] \\ 
+$p_{12}$ & 0.679 & 0.685 & [0.425;0.893] \\ 
+$p_{13}$ & 0.190 & 0.177 & [0.046;0.399] \\ 
+$p_{14}$ & 0.376 & 0.366 & [0.168;0.658] \\ 
+   \hline
+\end{tabular}
+\end{table}
 
 
 \newpage
 \section{Implementação \textit{Hamiltonian Monte Carlo} no STAN}
 
 Consegui fazer a implementação do modelo de captura-marcação-recaptura no STAN com as prioris de interesse usando a aproximação da poisson-Normal sugerida anteriormente. A seguir são apresentados os resultados, notamos que foram coerente com os métodos implementados no R.
+\nocite{stan}
+\begin{table}[ht]
+\centering
+\begin{tabular}{ccccc}
+  \hline
+Parâmetro & Média & Mediana & Intervalo de Credibilidade 95\% \\ 
+  \hline
+ N & 12.361 & 12.255 & [12.009;13.28] \\ 
+ $p_1$ & 0.210 & 0.196 & [0.05;0.446] \\ 
+ $p_2$ & 0.349 & 0.340 & [0.136;0.6] \\ 
+$p_3$ & 0.209 & 0.196 & [0.048;0.444] \\ 
+ $p_4$ & 0.349 & 0.342 & [0.136;0.599] \\ 
+ $p_5$ & 0.348 & 0.341 & [0.134;0.602] \\ 
+ $p_6$ & 0.208 & 0.193 & [0.049;0.444] \\ 
+ $p_7$ & 0.279 & 0.270 & [0.09;0.526] \\ 
+ $p_8$ & 0.347 & 0.341 & [0.134;0.597] \\ 
+$p_9$ & 0.208 & 0.193 & [0.049;0.444] \\ 
+ $p_{10}$ & 0.280 & 0.269 & [0.09;0.524] \\ 
+$p_{11}$ & 0.417 & 0.413 & [0.193;0.664] \\ 
+$p_{12}$ & 0.767 & 0.779 & [0.522;0.944] \\ 
+ $p_{13}$ & 0.209 & 0.196 & [0.05;0.441] \\ 
+ $p_{14}$ & 0.417 & 0.410 & [0.187;0.67] \\ 
+   \hline
+\end{tabular}
+\end{table}
 
+\begin{figure}[H]
+  \centering
+  \subfloat[\footnotesize{}]{\includegraphics[width=16cm,height=10cm]{imgs/stan_print.png}}
+
+  \captionsetup{font=footnotesize,width=15cm}
+  \caption{\small Cadeias geradas pelo código implementado em STAN.}
+\end{figure}
+\newpage
+\section{Comentários}
+Foi muito interessante realizar esse trabalho, a etapa de gibbs foi relativamente tranquila de se realizar, grande parte do foco ficou em achar uma solução na implementação. troquei ideias com a Aurora e Yohana sobre possíveis soluções e acabei chegando na solução de usar a aproximação Poisson-Normal.
+Após encontrar essa possível solução optei por implementar primeiramente no STAN pois achei que seria mais fácil e de fato foi, durante a implementação no R tive alguns problemas principalmente com o espaço paramétrico de $\mathbf{p}$.
 
 
 
@@ -299,6 +370,52 @@ for (i in 2:Ngibbs) {
 }
 \end{lstlisting}
 
+\newpage
+\subsection*{A.1 Implementação HMC no R}
+\begin{lstlisting}[language=R]
+library(mvtnorm)
+U <- function(theta,r=12,ni){
+  N <- theta[1]
+  pi <- theta[2:length(theta)]
+  Ux <- log(gamma(N+1))-log(gamma(N-r+1)) + sum(ni*log(pi)+(N-ni)*log(1-pi)) - .01*(N-50)^2
+  return(-Ux)
+}
+K <- function(M,rho){
+  .5*t(rho)%*%M%*%rho
+}
+dUdt <- function(theta,r=12,ni){
+  N <- theta[1]
+  pi <- theta[2:length(theta)]
+  dUdp <- (N*pi-ni)/(pi*(1-pi))
+  dUdN <- -(digamma(N+1)/gamma(N+1)) + (digamma(N-r+1)/gamma(N-r+1)) - sum(log(1-pi)) + .02*(N-50)
+  grad <- c(dUdN,dUdp)
+  return(grad)
+}
+
+iter=2000
+sample <- matrix(0,nrow = iter,ncol=15)
+colnames(sample) <- c("N",paste0("p",1:14))
+sample[1,] <- c(15,runif(14))
+M <- cor(gbs%>%select(N,p1:p14))
+L=50;delta=.001
+for (i in 2:iter) {
+  rho0 <- theta0 <- matrix(0,nrow = L,ncol = 15)
+  rho0[1,] <- rmvnorm(1, mean = rep(0,15), sigma = M)
+  theta0[1,] <- sample[i-1,]
+  #leapfrog
+  for (j in 2:L) {
+    rhotemp <- rho0[j-1,] - (delta/2)*dUdt(theta = theta0[j-1,],ni=nj)
+    theta0[j,] <- theta0[j-1,] + delta*rhotemp
+    rho0[j,] <- rhotemp - (delta/2)*dUdt(theta = theta0[j,],ni=nj)
+  }
+  alpha=min(1,exp( -U(theta = theta0[L,],ni=nj) + U(theta = theta0[1,],ni=nj)- K(M,rho0[L,]) + K(M,rho0[1,])))
+  if(runif(1)<alpha){
+    sample[i,] <- theta0[L,]
+  }else{
+    sample[i,] <- sample[i-1,]
+  }
+}
+\end{lstlisting}
 \newpage
 \subsection*{A.1 Implementação STAN}
 \begin{lstlisting}[language=c]

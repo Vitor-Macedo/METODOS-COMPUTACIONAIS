@@ -19,24 +19,6 @@ mj <- dados%>%
   group_by(armadilha)%>%
   summarise(mj=sum(mj))
 nj <- nj$nj 
-Ngibbs=10e4
-iter0 <- c(rpois(1,50),runif(14))
-chain <- matrix(0,ncol = Ngibbs,nrow=length(iter0))
-chain[,1] <- iter0
-rownames(chain) <- c("N",paste0("p",1:14))
-lambda=50
-r <- sum(nj$nj)-sum(mj$mj)
-nj <- nj$nj 
-for (i in 2:Ngibbs) {
-  lambda_pos <- lambda * prod(1-chain[-1,i-1])
-  N_i_plus_1 <- rpois(n=1,lambda = lambda_pos) + r
-  chain[1,i] <- N_i_plus_1 
-  for (j in 1:length(nj)) {
-    aux <- rbeta(n = 1,shape1 = nj[j]+1,shape2 = N_i_plus_1-nj[j]+1)
-    chain[j+1,i] <- aux
-  }
-}
-
 gibbs_popSize <- function(iter=500,chains=4,r=12,nj,lambda=50){
   sample <- NULL
   aux <- matrix(0,nrow = iter,ncol=15)
